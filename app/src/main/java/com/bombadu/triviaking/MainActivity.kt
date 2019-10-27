@@ -13,14 +13,16 @@ import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.lang.StringBuilder
 
 class MainActivity : AppCompatActivity() {
 
     private val client = OkHttpClient()
     var isCorrect = false
     var correctAnswer = ""
-    var questionNum = 15
-    var score = 0
+    var questionNum = 0
+    var score = 0.0
+    var numOfQuestions = 20
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,13 +47,13 @@ class MainActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 var question = ""
-
                 var answerList = mutableListOf<String>()
 
 
 
                 try {
                     var myRepsonse = response.body!!.string()
+                    //var myResponseClean = cleanResponse(myResponse)
                     println(myRepsonse)
 
                     val jsonObject = JSONObject(myRepsonse)
@@ -59,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                     for (i in 0 until resultsJa.length()) {
                         val jsonIndex = resultsJa.getJSONObject(i)
                         question = jsonIndex.getString("question")
+                        //var cleanedQuestion = cleanResponse(question)
                         //question.
                         correctAnswer = jsonIndex.getString("correct_answer")
 
@@ -80,12 +83,12 @@ class MainActivity : AppCompatActivity() {
 
                 if (response.isSuccessful) runOnUiThread {
                     questionNum++
-                    if(questionNum > 20){
+                    if(questionNum > numOfQuestions){
                         gameOver()
                     } else {
                         questionCounterTextView.findViewById<TextView>(R.id.questionCounterTextView)
-                        questionCounterTextView.text = "Question: $questionNum of 20"
-                        questionTextView.text = question
+                        questionCounterTextView.text = "Question: $questionNum of $numOfQuestions"
+                        questionTextView.text = cleanResponse(question)
                         answerList.add(correctAnswer)
                         answerList.shuffle()
                         var answerListView = findViewById<ListView>(R.id.answerListView)
@@ -105,8 +108,24 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun cleanResponse(myResponse: String): String {
+        //var cleanedResponse = myResponse
+        var delimiter = "&quot;"
+        var delimiter2 = "&#039;"
+        var splitResponse = myResponse.split(Regex(delimiter))
+        var splitResponse2 = splitResponse.toString().split(Regex(delimiter2))
+        var splitResponseStr = splitResponse2.toString()
+        splitResponseStr = splitResponseStr.drop(2)
+        splitResponseStr = splitResponseStr.dropLast(2)
+        splitResponseStr = splitResponseStr.replace(",", "'")
+        println("TEST $splitResponseStr")
+
+
+        return splitResponseStr.toString()
+    }
+
     private fun gameOver() {
-        var percentage = ((score / 20)*100)
+        var percentage = ((score / numOfQuestions)*100)
         val goDialog = AlertDialog.Builder(this)
         goDialog.setTitle("Congratulations!")
         goDialog.setMessage("Your score is: $percentage%")
@@ -122,7 +141,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun resetGame() {
         questionNum = 0
-        score = 0
+        score = 0.0
         fetchData()
         scoreTextView.text = "Score: 0"
 
