@@ -64,11 +64,13 @@ class MainActivity : AppCompatActivity() {
                         //var cleanedQuestion = cleanResponse(question)
                         //question.
                         correctAnswer = jsonIndex.getString("correct_answer")
+                        correctAnswer = cleanResponse(correctAnswer)
 
                         val incorrectAnswersJA = jsonIndex.getJSONArray("incorrect_answers")
                         for (j in 0 until incorrectAnswersJA.length()) {
                             var incorrectAnswer = incorrectAnswersJA.getString(j)
-                            answerList.add(incorrectAnswer.toString())
+                            incorrectAnswer = cleanResponse(incorrectAnswer)
+                            answerList.add(incorrectAnswer)
 
                         }
 
